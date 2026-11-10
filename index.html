@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#012169">
+<title>MONITORA · Sistema de Monitoreo de Deserción y Permanencia Estudiantil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{--n:#012169;--r:#CA102E;--g:#a2a2a2}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{font-family:Inter,sans-serif;color:#1d2542;background:#fff;overflow-x:hidden;-webkit-text-size-adjust:100%}
+h1,h2,h3,.f{font-family:Sora,sans-serif;color:var(--n)}
+.card{background:#fff;border:1px solid #e6e9f2;border-radius:1.25rem;box-shadow:0 6px 24px -14px #01216944;transition:.3s}
+.hv:hover{transform:translateY(-4px);box-shadow:0 20px 40px -18px #01216966;cursor:pointer}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s,transform .9s}.rv.in{opacity:1;transform:none}
+.ph{background:linear-gradient(135deg,#012169,#CA102E);border-radius:1.5rem;overflow:hidden;min-height:240px}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;min-height:240px}
+.btn{display:inline-flex;align-items:center;gap:.5rem;font-weight:600;border-radius:999px;padding:.8rem 1.4rem;transition:.25s;font-size:.95rem}
+.b1{background:var(--r);color:#fff}.b1:hover{background:#a50d25;transform:translateY(-2px)}
+.b2{background:var(--n);color:#fff}.b2:hover{background:#00164a;transform:translateY(-2px)}
+.b3{border:2px solid var(--n);color:var(--n)}.b3:hover{background:var(--n);color:#fff}
+.chip{border:1.5px solid #d6dbea;border-radius:999px;padding:.4rem .95rem;font-size:.85rem;font-weight:600;color:#44507a;background:#fff;transition:.2s;white-space:nowrap}
+.chip.on,.chip:hover{background:var(--n);color:#fff;border-color:var(--n)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--r)}
+.sec{padding:4.5rem 1.25rem;max-width:1180px;margin:auto}
+.ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:#eef2fb;color:var(--n);flex:none}
+.box{background:#f6f8fd;border-left:4px solid var(--r);border-radius:.9rem;padding:1.1rem 1.3rem}
+.nav::-webkit-scrollbar{display:none}
+#modal{position:fixed;inset:0;background:#01216980;backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;z-index:80}
+#modal.on{display:flex}
+#mb{background:#fff;border-radius:1.5rem;max-width:560px;width:100%;max-height:88dvh;overflow:auto;padding:1.8rem;animation:pop .35s}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #25d36699}100%{box-shadow:0 0 0 22px #25d36600}}
+.wa{position:fixed;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));z-index:60;background:#25D366;color:#fff;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;animation:pulse 2s infinite}
+input[type=range]{width:100%;accent-color:#CA102E}
+input,select{font-size:16px}
+details>summary{cursor:pointer;list-style:none}details>summary::-webkit-details-marker{display:none}
+details[open] .chev{transform:rotate(180deg)}
+.dot{animation:fl 4s ease-in-out infinite}@keyframes fl{50%{transform:translateY(-10px)}}
+</style>
+</head>
+<body>
+<div id="bar" style="position:fixed;top:0;left:0;height:4px;background:var(--r);width:0;z-index:90"></div>
+
+<!-- LOGO BAND -->
+<div class="max-w-[1180px] mx-auto px-5 py-4 flex items-center justify-between gap-4">
+  <a href="#top"><img src="logo.jpg" alt="MONITORA" class="h-20 md:h-28 w-auto object-contain"></a>
+  <div class="flex gap-2 sm:gap-3">
+    <a href="RESUMEN_EJECUTIVO.pdf" download class="btn b3 !px-4 sm:!px-5"><i data-lucide="download" class="w-4 h-4"></i><span class="hidden sm:inline">Resumen ejecutivo</span><span class="sm:hidden">PDF</span></a>
+    <a data-wa target="_blank" rel="noopener" class="btn b1 !px-4 sm:!px-5"><i data-lucide="message-circle" class="w-4 h-4"></i><span class="hidden sm:inline">Hablemos</span></a>
+  </div>
+</div>
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur border-y border-slate-200">
+  <div class="nav max-w-[1180px] mx-auto px-5 flex gap-6 overflow-x-auto text-sm font-semibold text-slate-600" id="nv"></div>
+</nav>
+
+<!-- HERO -->
+<header id="top" class="relative overflow-hidden">
+  <div class="absolute -top-32 -right-32 w-[480px] h-[480px] rounded-full" style="background:radial-gradient(#012169 0,#0121690d 60%,transparent 70%);opacity:.18"></div>
+  <div class="sec grid lg:grid-cols-2 gap-10 items-center !pt-10">
+    <div class="rv">
+      <span class="tag">Propuesta para Instituciones de Educación Superior</span>
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-[1.05] mt-3">Sepa <span style="color:var(--r)">quién</span> se va a ir, <span style="color:var(--r)">por qué</span> y <span style="color:var(--r)">cuándo</span> aún puede evitarlo.</h1>
+      <p class="mt-5 text-lg text-slate-600">Monitoreo de deserción y permanencia estudiantil con evidencia propia de su universidad: encuestas en tres ondas, un Índice de Riesgo de Deserción calibrado con sus datos y un tablero que convierte alertas en acciones.</p>
+      <div class="flex flex-wrap gap-3 mt-7">
+        <a data-wa target="_blank" rel="noopener" class="btn b1"><i data-lucide="calendar-check" class="w-5 h-5"></i>Agende su reunión de 60 min</a>
+        <a href="#calc" class="btn b3"><i data-lucide="calculator" class="w-5 h-5"></i>Calcule su retorno</a>
+      </div>
+      <p class="mt-5 text-sm text-slate-500">Felipe Moreno, Ph.D. · Director de MONITORA · Bogotá D.C., Colombia</p>
+    </div>
+    <div class="relative rv">
+      <div class="ph h-[380px] md:h-[470px]"><img src="foto1.jpg" alt="Estudiantes universitarios" onerror="this.remove()"></div>
+      <div class="card absolute -bottom-6 left-2 right-2 sm:left-auto sm:-left-8 sm:right-auto sm:w-[320px] p-4 dot">
+        <div class="flex justify-between items-center"><b class="f text-sm">IRD · Estudiante ejemplo</b><span class="text-[10px] text-slate-400">ilustrativo</span></div>
+        <div class="flex items-end gap-3 mt-2"><div id="irdN" class="f text-4xl font-extrabold">34</div><div id="irdT" class="text-sm font-semibold mb-1">Verde</div></div>
+        <div class="h-3 rounded-full mt-2" style="background:linear-gradient(90deg,#7fc8a9,#f2d27a,#e98a94);position:relative"><i id="irdM" style="position:absolute;top:-4px;width:6px;height:20px;border-radius:4px;background:var(--n);left:34%;transition:.6s"></i></div>
+        <p id="irdD" class="text-xs text-slate-600 mt-2">Onda 1 · línea base al ingresar.</p>
+        <div class="flex gap-2 mt-3"><button class="chip on" data-i="0">Onda 1</button><button class="chip" data-i="1">Onda 2</button><button class="chip" data-i="2">Onda 3</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-[1180px] mx-auto px-5 grid grid-cols-2 md:grid-cols-6 gap-3 mt-8" id="kpi"></div>
+</header>
+
+<!-- PROBLEMA -->
+<section id="problema" class="sec">
+  <div class="grid lg:grid-cols-2 gap-10 items-center">
+    <div class="ph h-[360px] rv"><img src="foto2.jpg" alt="Aula universitaria" onerror="this.remove()"></div>
+    <div class="rv">
+      <span class="tag">El problema</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2">La deserción temprana rara vez tiene una sola causa</h2>
+      <div class="box mt-5 text-slate-700">Casi todas las universidades la miden, pero pocas saben <b>por qué</b> ocurre en su población, <b>a quién</b> le está ocurriendo y <b>cuándo</b> es todavía posible intervenir. Cuesta ingresos, afecta la acreditación y, sobre todo, interrumpe proyectos de vida.</div>
+      <p class="mt-4 text-slate-600">El problema no es falta de información, sino de <b>uso de la información para decidir</b>. Toque cada tarjeta:</p>
+      <div class="grid sm:grid-cols-3 gap-3 mt-4" id="lim"></div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFERENCIAL -->
+<section id="valor" class="bg-[#f6f8fd]"><div class="sec">
+  <div class="text-center max-w-2xl mx-auto rv"><span class="tag">Propuesta de valor</span><h2 class="text-3xl md:text-4xl font-bold mt-2">No es un modelo genérico: es el modelo de su universidad</h2></div>
+  <div class="flex justify-center gap-2 mt-6"><button class="chip on" data-c="0">Lo que suele ofrecerse</button><button class="chip" data-c="1">Lo que ofrece MONITORA</button></div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-6" id="cmp"></div>
+  <div class="grid md:grid-cols-3 gap-4 mt-8" id="pri"></div>
+  <div class="card p-6 mt-8 rv"><h3 class="font-bold text-xl text-center">Ciclo completo del estudiante</h3>
+    <div class="grid md:grid-cols-5 items-center gap-2 mt-4 text-center">
+      <div class="box !border-l-0 !border-t-4 !border-[#012169]"><b class="f">Ingreso</b><br><span class="text-sm text-slate-600">MEV · ajuste vocacional e identidad</span></div><i data-lucide="arrow-right" class="mx-auto text-[#CA102E] rotate-90 md:rotate-0"></i>
+      <div class="box !border-l-0 !border-t-4"><b class="f">Permanencia</b><br><span class="text-sm text-slate-600">Este servicio · IRD y tablero</span></div><i data-lucide="arrow-right" class="mx-auto text-[#CA102E] rotate-90 md:rotate-0"></i>
+      <div class="box !border-l-0 !border-t-4 !border-[#012169]"><b class="f">Egreso</b><br><span class="text-sm text-slate-600">SIPE-MEAL · pertinencia y empleabilidad</span></div>
+    </div></div>
+</div></section>
+
+<!-- DIMENSIONES -->
+<section id="metodo" class="sec">
+  <div class="text-center max-w-2xl mx-auto rv"><span class="tag">Metodología</span><h2 class="text-3xl md:text-4xl font-bold mt-2">Ocho dimensiones de riesgo</h2>
+  <p class="text-slate-600 mt-3">Sobre los enfoques de Tinto, Bean y Metzner, autoeficacia y capital cultural y económico. Toque el gráfico o una tarjeta para ver el detalle.</p></div>
+  <div class="grid lg:grid-cols-2 gap-8 mt-8 items-center">
+    <div class="card p-5 rv"><div class="h-[340px]"><canvas id="cDim"></canvas></div><p class="text-xs text-slate-400 text-center mt-2">Vista ilustrativa: los pesos reales se calibran con los datos de cada universidad.</p></div>
+    <div class="grid grid-cols-2 gap-3" id="dim"></div>
+  </div>
+  <div class="grid lg:grid-cols-2 gap-8 mt-10 items-center">
+    <div class="rv"><div class="box text-slate-700"><b>Pesos que salen de los datos:</b> modelo inicial con panel Delphi (semestre 1) → calibración con regresión logística y aprendizaje automático explicable (semestre 2 en adelante) → validación continua. La universidad conserva siempre una versión interpretable.</div>
+    <div class="box mt-3 text-slate-700">Si ya aplicó el <b>MEV</b> en admisión, el perfil vocacional se incorpora como variable de partida y no se vuelve a preguntar.</div></div>
+    <div class="ph h-[260px] rv"><img src="foto3.jpg" alt="Análisis de datos" onerror="this.remove()"></div>
+  </div>
+</section>
+
+<!-- ONDAS -->
+<section id="ondas" class="bg-[#f6f8fd]"><div class="sec">
+  <div class="grid lg:grid-cols-2 gap-8 items-start">
+    <div class="rv"><span class="tag">Tres ondas por periodo</span><h2 class="text-3xl md:text-4xl font-bold mt-2">Capturamos cómo cambia el riesgo durante el semestre</h2>
+      <div class="flex gap-2 mt-5 flex-wrap" id="wt"></div><div class="card p-5 mt-3" id="wp"></div>
+      <div class="ph h-[200px] mt-5"><img src="foto4.jpg" alt="Encuesta en aula" onerror="this.remove()"></div></div>
+    <div class="space-y-5">
+      <div class="card p-5 rv"><b class="f">Duración de cada encuesta (minutos)</b><div class="h-[210px] mt-2"><canvas id="cWave"></canvas></div></div>
+      <div class="card p-5 rv"><b class="f">Meta de tasa de respuesta (%)</b><div class="h-[190px] mt-2"><canvas id="cResp"></canvas></div></div>
+      <div class="box text-sm text-slate-700 rv"><b>Participación:</b> aplicación en aula, enlaces personalizados con recordatorios escalonados e informe personal inmediato. Censo en primer semestre y muestra después (95 % de confianza, error 5 a 7 %); cohortes menores de 150 se trabajan por censo.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- INDICADORES -->
+<section id="indicadores" class="sec">
+  <div class="text-center max-w-2xl mx-auto rv"><span class="tag">Indicadores a la medida</span><h2 class="text-3xl md:text-4xl font-bold mt-2">Cada indicador responde una pregunta de gestión y tiene un responsable</h2></div>
+  <div class="flex flex-wrap justify-center gap-2 mt-6" id="ft"></div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6" id="ind"></div>
+</section>
+
+<!-- TABLERO -->
+<section id="tablero" class="bg-[#012169] text-white"><div class="sec">
+  <div class="grid lg:grid-cols-2 gap-8 items-center">
+    <div class="rv"><span class="tag !text-[#ff8a9a]">Tablero de decisión</span><h2 class="text-3xl md:text-4xl font-bold mt-2 !text-white">Cinco vistas, acceso por rol</h2>
+      <div class="flex flex-wrap gap-2 mt-5" id="tt"></div>
+      <div class="bg-white/10 rounded-2xl p-5 mt-4" id="tp"></div>
+      <p class="mt-4 text-sm text-white/70">Alojamiento administrado por MONITORA (sin carga para TI) o despliegue en su propia nube. Visualización en Power BI, Looker Studio u otra herramienta.</p></div>
+    <div class="ph h-[400px] rv"><img src="foto5.jpg" alt="Tablero de control" onerror="this.remove()"></div>
+  </div>
+  <div class="grid md:grid-cols-4 gap-3 mt-8" id="sla"></div>
+</div></section>
+
+<!-- ALERTAS Y SEGURIDAD -->
+<section id="seguridad" class="sec">
+  <div class="grid lg:grid-cols-2 gap-10">
+    <div class="rv"><span class="tag">Alertas y rutas de apoyo</span><h2 class="text-2xl md:text-3xl font-bold mt-2">Del riesgo a la acción, con trazabilidad</h2>
+      <p class="text-slate-600 mt-3">Tras cada onda el motor clasifica y envía la alerta a la unidad responsable según una matriz acordada. Elija un riesgo:</p>
+      <div class="flex flex-wrap gap-2 mt-4" id="rt"></div><div class="box mt-3 text-slate-700" id="rp">Seleccione un tipo de riesgo.</div>
+      <div class="ph h-[230px] mt-6"><img src="foto6.jpg" alt="Acompañamiento estudiantil" onerror="this.remove()"></div></div>
+    <div class="rv"><span class="tag">Seguridad y privacidad</span><h2 class="text-2xl md:text-3xl font-bold mt-2">Uso no punitivo y datos protegidos</h2>
+      <div class="mt-4 space-y-2" id="sg"></div>
+      <div class="box mt-4 text-sm italic text-slate-600">«Autorizo el uso de la información que suministre para análisis estadístico y cualitativo, y para que la universidad me ofrezca acompañamiento y servicios de apoyo para mi permanencia. La participación es voluntaria y no afectará mi situación académica.»</div></div>
+  </div>
+</section>
+
+<!-- PLAN -->
+<section id="plan" class="bg-[#f6f8fd]"><div class="sec">
+  <div class="grid lg:grid-cols-3 gap-8 items-center">
+    <div class="rv lg:col-span-2"><span class="tag">Plan de implementación</span><h2 class="text-3xl md:text-4xl font-bold mt-2">De la primera reunión al tablero activo</h2><p class="text-slate-600 mt-3">Inicie las fases 0 a 2 al menos <b>12 semanas</b> antes del periodo académico. Toque una fase.</p></div>
+    <div class="ph h-[170px] rv"><img src="foto7.jpg" alt="Equipo de trabajo" onerror="this.remove()"></div>
+  </div>
+  <div class="grid md:grid-cols-3 lg:grid-cols-6 gap-3 mt-8" id="fs"></div>
+  <div class="card p-6 mt-6 rv"><b class="f">Comité de permanencia</b><p class="text-slate-600 mt-1">Rectoría o vicerrectoría académica, bienestar, admisiones, registro, un decano o delegado y un representante estudiantil. Se reúne tres veces por semestre, después de cada onda: allí los indicadores se vuelven decisiones.</p></div>
+</div></section>
+
+<!-- INVERSION -->
+<section id="inversion" class="sec">
+  <div class="text-center max-w-2xl mx-auto rv"><span class="tag">Propuesta económica</span><h2 class="text-3xl md:text-4xl font-bold mt-2">Tres paquetes según el tamaño de su institución</h2><p class="text-slate-500 text-sm mt-2">Valores de referencia en USD, sin impuestos.</p></div>
+  <div class="grid md:grid-cols-3 gap-5 mt-8" id="pk"></div>
+  <div class="grid lg:grid-cols-2 gap-6 mt-8">
+    <div class="card p-5 rv"><div class="flex justify-between items-center flex-wrap gap-2"><b class="f">Comparativo de paquetes</b><div class="flex gap-2"><button class="chip on" data-m="0">Alistamiento</button><button class="chip" data-m="1">Por estudiante</button></div></div><div class="h-[250px] mt-3"><canvas id="cPk"></canvas></div></div>
+    <div class="card p-5 rv"><b class="f">Inversión del ciclo 1: cohorte de 1.000 · Estratégico</b><div class="h-[250px] mt-3"><canvas id="cInv"></canvas></div></div>
+  </div>
+  <div class="box mt-6 text-slate-700 rv"><b>Contratos plurianuales:</b> quien contrate dos o más ciclos consecutivos no vuelve a pagar el alistamiento y recibe 10 % de descuento por estudiante. No incluye incentivos, desplazamientos fuera de la ciudad base ni integraciones especiales sin API.</div>
+</section>
+
+<!-- CALCULADORA -->
+<section id="calc" class="bg-[#f6f8fd]"><div class="sec">
+  <div class="text-center max-w-2xl mx-auto rv"><span class="tag">Calculadora de retorno</span><h2 class="text-3xl md:text-4xl font-bold mt-2">¿Cuántos estudiantes debe retener para recuperar la inversión?</h2></div>
+  <div class="grid lg:grid-cols-2 gap-6 mt-8">
+    <div class="card p-6 space-y-5 rv">
+      <label class="block"><span class="flex justify-between font-semibold"><span>Estudiantes por ciclo</span><b id="vN" class="f"></b></span><input id="iN" type="range" min="200" max="4000" step="50" value="1000"></label>
+      <label class="block"><span class="flex justify-between font-semibold"><span>Matrícula semestral (USD)</span><b id="vM" class="f"></b></span><input id="iM" type="range" min="300" max="5000" step="100" value="1500"></label>
+      <label class="block"><span class="flex justify-between font-semibold"><span>Semestres restantes promedio</span><b id="vS" class="f"></b></span><input id="iS" type="range" min="2" max="10" value="8"></label>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="box !border-l-0 !border-t-4"><div class="text-xs text-slate-500">Paquete</div><b id="rK" class="f"></b></div>
+        <div class="box !border-l-0 !border-t-4"><div class="text-xs text-slate-500">Inversión</div><b id="rI" class="f"></b></div>
+        <div class="box !border-l-0 !border-t-4 !border-[#012169]"><div class="text-xs text-slate-500">Equilibrio</div><b id="rE" class="f text-2xl" style="color:var(--r)"></b></div>
+      </div>
+      <p id="rT" class="text-slate-700"></p>
+      <p class="text-xs text-slate-400">Cifras ilustrativas con ingreso bruto, no margen. En la fase de descubrimiento se reemplazan por los valores reales de la universidad.</p>
+    </div>
+    <div class="card p-5 rv"><b class="f">Ingreso preservado vs. inversión (USD)</b><div class="h-[330px] mt-3"><canvas id="cRoi"></canvas></div></div>
+  </div>
+</div></section>
+
+<!-- DIAGNOSTICO -->
+<section id="quiz" class="sec">
+  <div class="grid lg:grid-cols-2 gap-8 items-center">
+    <div class="rv"><span class="tag">Autodiagnóstico en 30 segundos</span><h2 class="text-3xl md:text-4xl font-bold mt-2">¿Qué tan expuesta está su universidad?</h2><p class="text-slate-600 mt-3">Cuatro preguntas. Al final, un resultado y un siguiente paso concreto.</p></div>
+    <div class="card p-6 rv"><div id="qz"></div></div>
+  </div>
+</section>
+
+<!-- POR QUE -->
+<section id="porque" class="bg-[#f6f8fd]"><div class="sec">
+  <div class="text-center rv"><span class="tag">Por qué MONITORA</span><h2 class="text-3xl md:text-4xl font-bold mt-2">Evidencia para decidir, no informes para archivar</h2></div>
+  <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-4 mt-8" id="wy"></div>
+</div></section>
+
+<!-- CTA FINAL -->
+<section id="contacto" class="relative overflow-hidden text-white" style="background:#012169">
+  <div class="absolute inset-0 ph !rounded-none opacity-30"><img src="foto8.jpg" alt="" onerror="this.remove()"></div>
+  <div class="sec relative text-center">
+    <h2 class="text-3xl md:text-5xl font-extrabold !text-white">Cada semestre sin medir es una cohorte que se va sin saber por qué.</h2>
+    <p class="mt-4 text-lg text-white/85 max-w-2xl mx-auto">Reunión de presentación de 60 minutos con rectoría, bienestar y admisiones. Sin costo y sin compromiso.</p>
+    <div class="flex flex-wrap justify-center gap-3 mt-8">
+      <a data-wa target="_blank" rel="noopener" class="btn b1"><i data-lucide="message-circle" class="w-5 h-5"></i>WhatsApp +57 314 791 1387</a>
+      <a href="tel:+573147911387" class="btn !bg-white !text-[#012169]"><i data-lucide="phone" class="w-5 h-5"></i>Llamar ahora</a>
+      <a href="mailto:felipe.moreno@monitora.com.co?subject=Reuni%C3%B3n%20Sistema%20de%20Monitoreo%20de%20Deserci%C3%B3n" class="btn !border-2 !border-white text-white"><i data-lucide="mail" class="w-5 h-5"></i>Escribir un correo</a>
+      <a href="RESUMEN_EJECUTIVO.pdf" download class="btn !border-2 !border-white/50 text-white"><i data-lucide="download" class="w-5 h-5"></i>Resumen ejecutivo</a>
+    </div>
+    <div class="grid sm:grid-cols-4 gap-3 mt-10 text-left text-sm" id="nx"></div>
+    <p class="mt-8 text-white/70 text-sm">Propuesta vigente 60 días calendario desde su emisión (noviembre de 2026).</p>
+  </div>
+</section>
+<footer class="text-center text-sm text-slate-500 py-6 px-4">© 2026 MONITORA · Felipe Moreno, Ph.D. · www.monitora.com.co · Bogotá D.C., Colombia</footer>
+
+<a data-wa target="_blank" rel="noopener" class="wa" aria-label="WhatsApp"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9s-.5-.1-.7.1-.8.9-.9 1.1-.3.2-.6.1a7.9 7.9 0 0 1-3.9-3.4c-.3-.5.3-.5.8-1.5.1-.2 0-.4 0-.5l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.8 3.8 0 0 0-1.2 2.8 6.6 6.6 0 0 0 1.4 3.5 15 15 0 0 0 5.8 5.1c2.1.9 2.9.9 3.9.8a3.3 3.3 0 0 0 2.2-1.6 2.7 2.7 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z"/></svg></a>
+<div id="modal"><div id="mb"></div></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const WA='https://wa.me/573147911387?text=';
+const wa=t=>WA+encodeURIComponent(t);
+const WA0='Hola Felipe, vi el portafolio del Sistema de Monitoreo de Deserción y Permanencia Estudiantil de MONITORA y quiero agendar la reunión de presentación de 60 minutos.';
+const ic=n=>`<i data-lucide="${n}" class="w-6 h-6"></i>`;
+const P=['#B9CDEF','#F2BCC3','#CFD4DE','#BFE0D6','#F5E2B0','#D6C9EA','#C5E1EE','#EBD3C4'];
+Chart.defaults.font.family='Inter';Chart.defaults.color='#44507a';
+const pt={backgroundColor:'#012169',padding:10,cornerRadius:8};
+
+/* DATA */
+const NAV=[['problema','Problema'],['valor','Valor'],['metodo','Método'],['ondas','Ondas'],['indicadores','Indicadores'],['tablero','Tablero'],['plan','Plan'],['inversion','Inversión'],['calc','Calculadora'],['contacto','Contacto']];
+const KPI=[[8,'','dimensiones de riesgo'],[3,'','ondas por periodo'],[11,'','indicadores base'],[48,' h','alertas individuales'],[5,' días','informe y tablero'],[18,' años','de experiencia MEAL']];
+const LIM=[['clock','Información tardía','Se entera cuando el estudiante ya no se matriculó. Solo puede describir, no prevenir.'],['globe','Información genérica','Los estudios nacionales dan tendencias, pero no dicen qué ocurre en su campus ni en cada programa.'],['git-merge','Información sin decisión','Los datos viven en bienestar, admisiones, registro y cartera, y no llegan integrados a quien decide.']];
+const CMP=[['Un modelo único para todas las universidades','Indicadores y ponderaciones calibrados con la realidad de cada institución'],['Una encuesta puntual','Tres ondas por periodo que capturan cómo cambia el riesgo'],['Reportes descriptivos','Alertas accionables, rutas de apoyo y evaluación de las intervenciones'],['Datos que quedan en un informe','Tablero vivo con acceso diferenciado por rol'],['Entrega y salida','Comité de permanencia basado en evidencia y mejora continua']];
+const PRI=[['users','Co-construcción','Instrumentos y reglas de alerta se diseñan con bienestar, admisiones, facultades y registro. La universidad es dueña del modelo.'],['heart-handshake','Uso no punitivo','El riesgo se usa para apoyar al estudiante, nunca para sancionarlo ni excluirlo.'],['target','Decisión sobre descripción','Cada indicador responde una pregunta de gestión y tiene un responsable de actuar.']];
+const DIM=[['Vocacional','compass','Claridad vocacional, ajuste entre expectativas y realidad del programa, intención de cambio de carrera.','Orientación profesional'],['Académica','book-open','Preparación previa, hábitos de estudio, autoeficacia y rendimiento percibido.','Tutorías y monitorías'],['Económica','wallet','Capacidad de pago, dependencia de becas o créditos, trabajo simultáneo.','Financiación estudiantil'],['Integración social e institucional','users','Sentido de pertenencia, vínculos con pares y docentes, uso de servicios.',''],['Bienestar y carga','heart-pulse','Estrés, sueño, carga académica y laboral, apoyo percibido. Tamizaje general, no clínico.','Atención psicosocial'],['Logística y entorno','bus','Transporte, tiempos de desplazamiento, conectividad, responsabilidades de cuidado.',''],['Experiencia institucional','building-2','Calidad percibida de docencia, trámites, horarios, infraestructura y trato.',''],['Familia y red de apoyo','house','Respaldo familiar, expectativas del hogar, primera generación universitaria.','']];
+const WV=[['1. Entrada','Semanas 1 a 3','12 a 15 min','Línea base: expectativas, vocación, condiciones económicas y de entorno, apoyos. Genera el primer IRD.'],['2. Pulso intermedio','Semanas 7 a 9, antes de la fecha límite de retiro','6 a 8 min','Detecta cambios: adaptación, carga, rendimiento percibido e intención de permanencia. Es la onda más útil para intervenir.'],['3. Cierre','Semanas 14 a 16','10 a 12 min','Balance de la experiencia, factores que influyeron en quedarse o irse e intención de reinscripción.']];
+const IND=[['IRD (0 a 100)','Riesgo global de deserción con semáforo verde, amarillo o rojo','Bienestar, tutores'],['IRD por dimensión','Qué factor pesa más en cada estudiante y en cada grupo','Facultades'],['Índice de Claridad Vocacional','Seguridad en la elección y ajuste con el programa','Admisiones, decanos'],['Índice de Pertenencia','Integración social e institucional percibida','Bienestar, rectoría'],['Índice de Vulnerabilidad Financiera','Presión económica y dependencia de apoyos','Financiación, bienestar'],['Índice de Carga y Bienestar','Sobrecarga académica, laboral y emocional (tamizaje)','Bienestar'],['Intención de permanencia','Ítem único de reinscripción, con seguimiento por onda','Rectoría'],['Cambio intra-semestre del riesgo','Variación del IRD entre ondas 1 y 2, y 2 y 3','Comité de permanencia'],['Tasa de cobertura de acciones','% de estudiantes en rojo contactados en menos de 5 días hábiles','Bienestar'],['Efectividad de la intervención','Retención de atendidos frente a comparables no atendidos','Comité de permanencia'],['Retención observada','Permanencia semestre a semestre por programa, cohorte y perfil','Todos']];
+const FT=['Todos','Bienestar','Facultades','Admisiones','Rectoría','Comité de permanencia'];
+const VW=[['Panorama institucional','layout-dashboard','IRD promedio, distribución del riesgo, retención observada y comparación entre cohortes.'],['Causas','search','Peso de las ocho dimensiones por programa, jornada, sede y perfil, con filtros.'],['Alertas','bell-ring','Lista priorizada de estudiantes en rojo y amarillo (solo roles autorizados), con motivo principal y ruta sugerida.'],['Seguimiento a intervenciones','clipboard-check','Estado de cada caso, responsable, fecha de contacto y resultado.'],['Evolución temporal','trending-up','Trayectoria del riesgo entre ondas y comparación entre semestres.']];
+const SLA=[['5','días hábiles','para informe y tablero tras cada onda'],['48','horas','alertas individuales tras la onda censal'],['99','%','disponibilidad objetivo del tablero'],['80','%','respuesta objetivo en onda 1 con censo']];
+const SG=[['Consentimiento informado','Previo y expreso, con lenguaje claro y versión para menores de edad y sus acudientes cuando aplique.'],['Minimización y seudonimización','Solo se recoge lo necesario. Identificadores seudonimizados y no se muestran grupos con menos de 10 estudiantes.'],['Control de acceso por rol','Rectoría y decanaturas ven datos agregados; solo bienestar y tutores asignados ven información individual.'],['Cifrado y auditoría','Cifrado en tránsito y en reposo, registro de auditoría de accesos y respaldos periódicos.'],['Protocolo de riesgo emocional','Los ítems de bienestar son tamizaje general y no sustituyen una valoración clínica; se acuerda con bienestar cómo actuar ante respuestas de riesgo.'],['Cumplimiento normativo','Ley 1581 (Colombia), LGPD (Brasil), Ley 25.326 (Argentina), Ley 29733 (Perú), Ley 19.628 (Chile) y legislación federal de México. MONITORA actúa como encargado del tratamiento.']];
+const FS=[['0. Descubrimiento','Semanas 1 a 3','Revisión de datos, estadísticas de deserción, políticas y servicios. Entrevistas con rectoría, bienestar, admisiones, registro y facultades.','Diagnóstico inicial y plan de trabajo'],['1. Co-diseño y calibración','Semanas 4 a 7','Taller Delphi, ajuste de dimensiones e ítems, indicadores, matriz de rutas, protocolo de datos y consentimiento.','Instrumentos v1, plan muestral, matriz de alertas'],['2. Piloto','Semanas 8 a 10','Aplicación a una muestra, validación psicométrica, prueba del tablero y del flujo de alertas.','Instrumentos validados, tablero beta'],['3. Despliegue ciclo 1','Un semestre','Ondas 1, 2 y 3, informe personal, alertas y tablero en producción.','Tablero activo, informes por onda'],['4. Análisis y comité','Cierre del semestre','Mapa de causas, calibración del IRD, evaluación de intervenciones y sesión con el comité.','Informe diagnóstico y plan de retención'],['5. Mejora continua','Ciclos 2 en adelante','Calibración con más cohortes, modelo predictivo, extensión a otros semestres y onda de salida.','IRD calibrado e informe anual']];
+const PK=[['Esencial','200 a 500',3500,8,['2 ondas (entrada y cierre)','Tablero básico','Calibración: modelo experto','1 informe por semestre']],['Estratégico','501 a 2.000',5500,6.5,['3 ondas (entrada, pulso y cierre)','Tablero completo con alertas y rutas','IRD calibrado con una cohorte','1 informe por semestre y 1 taller']],['Institucional','2.001 en adelante',8000,4.5,['3 ondas más onda de salida','Tablero con integración a sistemas internos','Modelo predictivo y recalibración continua','Informe por onda y acompañamiento trimestral al comité']]];
+const RT={'Económico':'Financiación estudiantil','Académico':'Tutorías o monitorías','Vocacional':'Orientación profesional','Bienestar':'Atención psicosocial'};
+const WY=[['globe-2','18 años de MEAL','Experiencia en monitoreo, evaluación, aprendizaje y rendición de cuentas en cooperación internacional.'],['graduation-cap','Equipo directivo experto','Formación en economía, desarrollo y políticas públicas para conectar datos con decisiones.'],['flask-conical','Instrumentos propios','El MEV (10 a 15 min, reportes automáticos) y SIPE-MEAL para pertinencia y empleabilidad.'],['smartphone','Tecnología ágil','Captura móvil, procesamiento automatizado y tableros a la medida, de bajo costo.'],['map','Cobertura regional','Se adapta a la normativa, el calendario académico y el contexto de cada país.']];
+const NX=[['Reunión de 60 min','con rectoría, bienestar y admisiones'],['Acuerdo de confidencialidad','y solicitud de datos (Fase 0)'],['Propuesta ajustada','con alcance, cronograma y valores definitivos'],['Contrato e inicio','de la Fase 0']];
+const QZ=['¿Se entera de la deserción cuando el estudiante ya no se matriculó?','¿Sus indicadores de permanencia son genéricos o importados de otro modelo?','¿Los datos de bienestar, admisiones, registro y cartera están sin integrar?','¿No puede afirmar que contacta a los estudiantes en riesgo en menos de 5 días hábiles?'];
+
+/* UI helpers */
+const money=n=>'USD '+Math.round(n).toLocaleString('es-CO');
+function openM(h,body){$('#mb').innerHTML=`<div class="flex justify-between items-start gap-3"><h3 class="text-2xl font-bold">${h}</h3><button onclick="closeM()" class="ico !w-9 !h-9" aria-label="Cerrar"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="mt-3 text-slate-700 space-y-3">${body}</div><a data-wa target="_blank" rel="noopener" class="btn b1 mt-5"><i data-lucide="message-circle" class="w-4 h-4"></i>Conversemos sobre esto</a>`;$('#modal').classList.add('on');lucide.createIcons();setWA()}
+function closeM(){$('#modal').classList.remove('on')}
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeM()};document.onkeydown=e=>{if(e.key==='Escape')closeM()};
+function setWA(t){$$('[data-wa]').forEach(a=>a.href=wa(a.dataset.msg||t||WA0))}
+function tabs(btns,fn){btns.forEach(b=>b.onclick=()=>{btns.forEach(x=>x.classList.remove('on'));b.classList.add('on');fn(+b.dataset.k)})}
+
+/* RENDER */
+$('#nv').innerHTML=NAV.map(n=>`<a href="#${n[0]}" class="py-3 hover:text-[#CA102E] whitespace-nowrap">${n[1]}</a>`).join('');
+$('#kpi').innerHTML=KPI.map(k=>`<div class="card p-4 text-center"><div class="f text-3xl font-extrabold"><span data-c="${k[0]}">0</span>${k[1]}</div><div class="text-xs text-slate-500 mt-1">${k[2]}</div></div>`).join('');
+$('#lim').innerHTML=LIM.map((l,i)=>`<button class="card hv p-4 text-left" data-l="${i}"><div class="ico !bg-[#fdecef] !text-[#CA102E]">${ic(l[0])}</div><b class="f block mt-2 text-sm">${l[1]}</b><span class="text-xs text-[#CA102E] font-semibold">Ver más</span></button>`).join('');
+$$('[data-l]').forEach(b=>b.onclick=()=>{const l=LIM[b.dataset.l];openM(l[1],`<p>${l[2]}</p><p>Este servicio convierte percepciones en evidencia, evidencia en alertas y alertas en acciones medibles.</p>`)});
+function cmp(k){$('#cmp').innerHTML=CMP.map(c=>`<div class="card p-4 ${k?'!border-[#CA102E]':''}"><div class="ico ${k?'!bg-[#fdecef] !text-[#CA102E]':''}">${ic(k?'circle-check':'circle-minus')}</div><p class="mt-3 text-sm ${k?'font-semibold text-[#012169]':'text-slate-500'}">${c[k]}</p></div>`).join('')}
+cmp(0);tabs($$('[data-c]:not(span)').map(b=>(b.dataset.k=b.dataset.c,b)),cmp);
+$('#pri').innerHTML=PRI.map(p=>`<div class="card p-5 rv"><div class="ico">${ic(p[0])}</div><b class="f block mt-3">${p[1]}</b><p class="text-sm text-slate-600 mt-1">${p[2]}</p></div>`).join('');
+const dimM=i=>{const d=DIM[i];openM(d[0],`<p>${d[2]}</p><div class="box">Ruta de apoyo: <b>${d[3]||'definida en la matriz acordada con la universidad'}</b></div>`)};
+$('#dim').innerHTML=DIM.map((d,i)=>`<button class="card hv p-4 text-left" onclick="dimM(${i})"><div class="ico" style="background:${P[i]}">${ic(d[1])}</div><b class="block mt-2 text-sm f">${d[0]}</b></button>`).join('');
+function wave(i){const w=WV[i];$('#wp').innerHTML=`<div class="flex justify-between flex-wrap gap-2"><b class="f text-lg">${w[0]}</b><span class="chip on !cursor-default">${w[2]}</span></div><p class="text-sm text-[#CA102E] font-semibold mt-1">${w[1]}</p><p class="mt-2 text-slate-600">${w[3]}</p>`}
+$('#wt').innerHTML=WV.map((w,i)=>`<button class="chip ${i?'':'on'}" data-k="${i}">${w[0]}</button>`).join('');wave(0);tabs($$('#wt .chip'),wave);
+$('#ft').innerHTML=FT.map((f,i)=>`<button class="chip ${i?'':'on'}" data-k="${i}">${f}</button>`).join('');
+function ind(k){const f=FT[k];$('#ind').innerHTML=IND.filter(x=>!k||x[2].includes(f.split(' ')[0])||x[2]==='Todos').map(x=>`<div class="card hv p-5" onclick="openM('${x[0].replace(/'/g,"\\'")}','<p>${x[1]}.</p><div class=&quot;box&quot;>Lo usa: <b>${x[2]}</b></div>')"><b class="f">${x[0]}</b><p class="text-sm text-slate-600 mt-1">${x[1]}</p><span class="inline-block mt-3 text-xs font-semibold text-[#CA102E]">${x[2]}</span></div>`).join('')||'<p>Sin resultados</p>'}
+ind(0);tabs($$('#ft .chip'),ind);
+function vw(i){const v=VW[i];$('#tp').innerHTML=`<div class="flex items-center gap-3"><div class="ico !bg-white/15 !text-white">${ic(v[1])}</div><b class="f !text-white text-lg">${v[0]}</b></div><p class="mt-3 text-white/85">${v[2]}</p><div class="flex items-end gap-1.5 h-14 mt-4">${[40,65,50,85,60,95,70].map((h,j)=>`<i style="height:${h}%;flex:1;border-radius:4px;background:${P[(j+i)%8]};opacity:.85"></i>`).join('')}</div>`;lucide.createIcons()}
+$('#tt').innerHTML=VW.map((v,i)=>`<button class="chip ${i?'':'on'} !bg-transparent !text-white !border-white/40" data-k="${i}">${v[0]}</button>`).join('');vw(0);
+tabs($$('#tt .chip'),k=>{$$('#tt .chip').forEach(c=>c.style.cssText='');vw(k);$$('#tt .chip.on').forEach(c=>c.style.cssText='background:#fff!important;color:#012169!important')});
+$('#tt .chip').style.cssText='background:#fff!important;color:#012169!important';
+$('#sla').innerHTML=SLA.map(s=>`<div class="bg-white/10 rounded-2xl p-5 text-center"><div class="f text-4xl font-extrabold text-white">${s[0]}<span class="text-xl"> ${s[1]}</span></div><p class="text-sm text-white/75 mt-1">${s[2]}</p></div>`).join('');
+$('#rt').innerHTML=Object.keys(RT).map(k=>`<button class="chip" data-r="${k}">Riesgo ${k.toLowerCase()}</button>`).join('');
+$$('[data-r]').forEach(b=>b.onclick=()=>{$$('[data-r]').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#rp').innerHTML=`Alerta de riesgo <b>${b.dataset.r.toLowerCase()}</b> → pasa a <b style="color:#CA102E">${RT[b.dataset.r]}</b>. Queda registrada con tiempo de respuesta y resultado.`});
+$('#sg').innerHTML=SG.map(s=>`<details class="card p-4"><summary class="flex justify-between items-center font-semibold f text-[#012169]">${s[0]}<i data-lucide="chevron-down" class="chev w-5 h-5 transition"></i></summary><p class="text-sm text-slate-600 mt-2">${s[1]}</p></details>`).join('');
+$('#fs').innerHTML=FS.map((f,i)=>`<button class="card hv p-4 text-left rv" onclick="openM('${f[0]}','<p><b>${f[1]}</b></p><p>${f[2]}</p><div class=&quot;box&quot;>Producto: <b>${f[3]}</b></div>')"><div class="f text-3xl font-extrabold" style="color:${P[i]}">${i}</div><b class="f text-sm block">${f[0].slice(3)}</b><span class="text-xs text-slate-500">${f[1]}</span></button>`).join('');
+$('#pk').innerHTML=PK.map((p,i)=>`<div class="card p-6 rv ${i==1?'!border-2 !border-[#CA102E] md:-translate-y-3':''}">${i==1?'<span class="tag">Recomendado</span>':''}<h3 class="text-2xl font-bold">${p[0]}</h3><p class="text-sm text-slate-500">${p[1]} estudiantes por ciclo</p><div class="f text-4xl font-extrabold mt-3" style="color:var(--r)">USD ${p[3].toString().replace('.',',')}<span class="text-sm text-slate-500 font-normal"> / estudiante y ciclo</span></div><p class="text-sm mt-1">Alistamiento único: <b>${money(p[2])}</b></p><ul class="mt-4 space-y-2 text-sm text-slate-600">${p[4].map(x=>`<li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-[#CA102E] flex-none mt-0.5"></i>${x}</li>`).join('')}</ul><a data-wa data-msg="Hola Felipe, me interesa el paquete ${p[0]} del Sistema de Monitoreo de Deserción de MONITORA. ¿Podemos conversar?" target="_blank" rel="noopener" class="btn ${i==1?'b1':'b3'} mt-5 w-full justify-center">Cotizar ${p[0]}</a></div>`).join('');
+$('#wy').innerHTML=WY.map(w=>`<div class="card hv p-5 rv"><div class="ico">${ic(w[0])}</div><b class="f block mt-3 text-sm">${w[1]}</b><p class="text-xs text-slate-600 mt-1">${w[2]}</p></div>`).join('');
+$('#nx').innerHTML=NX.map((n,i)=>`<div class="bg-white/10 rounded-2xl p-4"><div class="f text-2xl font-extrabold text-[#ff8a9a]">${i+1}</div><b>${n[0]}</b><br><span class="text-white/70">${n[1]}</span></div>`).join('');
+
+/* HERO IRD */
+const IRD=[[34,'Verde','Onda 1 · línea base al ingresar.','#4aa583'],[62,'Rojo','Onda 2 · el pulso detecta carga económica: alerta en 48 h y ruta a financiación.','#CA102E'],[27,'Verde','Onda 3 · tras la intervención, el riesgo bajó y la intención de reinscripción es alta.','#4aa583']];
+$$('[data-i]').forEach(b=>b.onclick=()=>{$$('[data-i]').forEach(x=>x.classList.remove('on'));b.classList.add('on');const r=IRD[b.dataset.i];$('#irdN').textContent=r[0];$('#irdT').textContent=r[1];$('#irdT').style.color=r[3];$('#irdD').textContent=r[2];$('#irdM').style.left=r[0]+'%'});
+
+/* QUIZ */
+let qi=0,qs=0;
+function quiz(){const q=$('#qz');if(qi<QZ.length){q.innerHTML=`<div class="text-xs text-slate-400">Pregunta ${qi+1} de ${QZ.length}</div><div class="h-1.5 bg-slate-100 rounded-full mt-1"><i class="block h-full rounded-full bg-[#CA102E]" style="width:${qi/QZ.length*100}%"></i></div><p class="f font-semibold text-xl mt-5 text-[#012169]">${QZ[qi]}</p><div class="flex gap-3 mt-6"><button class="btn b2 flex-1 justify-center" onclick="ans(1)">Sí</button><button class="btn b3 flex-1 justify-center" onclick="ans(0)">No</button></div>`}else{const c=qs>=3?['Exposición alta','#CA102E','Su universidad está perdiendo la oportunidad de intervenir a tiempo. Un diagnóstico inicial le mostraría dónde y cuándo.']:qs>=2?['Exposición media','#d9a21b','Tiene bases, pero le falta integrar datos y llegar a tiempo a quien decide.']:['Exposición baja','#4aa583','Va bien encaminada. Podemos ayudarle a calibrar el modelo con sus datos y evaluar sus intervenciones.'];q.innerHTML=`<div class="text-center"><div class="f text-5xl font-extrabold" style="color:${c[1]}">${qs}/4</div><b class="f text-xl block mt-1" style="color:${c[1]}">${c[0]}</b><p class="text-slate-600 mt-2">${c[2]}</p><a data-wa data-msg="Hola Felipe, hice el autodiagnóstico en el portafolio de MONITORA y mi resultado fue ${c[0].toLowerCase()} (${qs}/4). Quiero conversar sobre el monitoreo de deserción." target="_blank" rel="noopener" class="btn b1 mt-5"><i data-lucide="message-circle" class="w-4 h-4"></i>Hablar con un experto</a><button class="block mx-auto mt-3 text-sm text-slate-500 underline" onclick="qi=0;qs=0;quiz()">Repetir</button></div>`;lucide.createIcons();setWA()}}
+function ans(v){qs+=v;qi++;quiz()}quiz();
+
+/* CHARTS */
+const click=(fn)=>(e,el)=>{if(el.length)fn(el[0].index)};
+new Chart($('#cDim'),{type:'doughnut',data:{labels:DIM.map(d=>d[0]),datasets:[{data:DIM.map(()=>12.5),backgroundColor:P,borderColor:'#fff',borderWidth:3,hoverOffset:18}]},options:{maintainAspectRatio:false,cutout:'45%',onClick:click(dimM),onHover:(e,el)=>e.native.target.style.cursor=el.length?'pointer':'',plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{...pt,callbacks:{label:c=>' Clic para ver el detalle'}}}}});
+new Chart($('#cWave'),{type:'bar',data:{labels:['Entrada','Pulso','Cierre'],datasets:[{label:'Minutos',data:[[12,15],[6,8],[10,12]],backgroundColor:[P[0],P[1],P[3]],borderRadius:10,borderSkipped:false}]},options:{maintainAspectRatio:false,onClick:click(wave2),plugins:{legend:{display:false},tooltip:{...pt,callbacks:{label:c=>` ${c.raw[0]} a ${c.raw[1]} min`}}},scales:{y:{beginAtZero:true,grid:{color:'#eef1f8'}},x:{grid:{display:false}}}}});
+function wave2(i){$$('#wt .chip')[i].click();location.hash='#ondas'}
+new Chart($('#cResp'),{type:'bar',data:{labels:['Onda 1 (censo)','Onda 2','Onda 3'],datasets:[{label:'Meta %',data:[80,65,65],backgroundColor:[P[1],P[0],P[4]],borderRadius:10}]},options:{indexAxis:'y',maintainAspectRatio:false,onClick:click(i=>openM(['Onda 1','Onda 2','Onda 3'][i]+': meta de respuesta',`<p>La meta de referencia es <b>${[80,'65 o más','65 o más'][i]} %</b>${i?'':' con censo'}. La tasa de respuesta define la calidad del sistema; por eso cada estudiante recibe un informe personal útil que lo motiva a responder la siguiente onda.</p>`)),plugins:{legend:{display:false},tooltip:{...pt,callbacks:{label:c=>' Meta: '+c.raw+'%'}}},scales:{x:{max:100,grid:{color:'#eef1f8'}},y:{grid:{display:false}}}}});
+const pkc=new Chart($('#cPk'),{type:'bar',data:{labels:PK.map(p=>p[0]),datasets:[{data:PK.map(p=>p[2]),backgroundColor:[P[0],P[1],P[3]],borderRadius:10}]},options:{maintainAspectRatio:false,onClick:click(i=>openM('Paquete '+PK[i][0],`<p>Para <b>${PK[i][1]}</b> estudiantes por ciclo.</p><ul class="list-disc pl-5">${PK[i][4].map(x=>`<li>${x}</li>`).join('')}</ul>`)),plugins:{legend:{display:false},tooltip:{...pt,callbacks:{label:c=>' USD '+c.raw.toLocaleString('es-CO')}}},scales:{y:{beginAtZero:true,grid:{color:'#eef1f8'}},x:{grid:{display:false}}}}});
+tabs($$('[data-m]').map(b=>(b.dataset.k=b.dataset.m,b)),k=>{pkc.data.datasets[0].data=PK.map(p=>p[k?3:2]);pkc.update()});
+new Chart($('#cInv'),{type:'pie',data:{labels:['Alistamiento y calibración','Valor por estudiante (1.000 × 6,50)'],datasets:[{data:[5500,6500],backgroundColor:[P[1],P[0]],borderColor:'#fff',borderWidth:3,hoverOffset:14}]},options:{maintainAspectRatio:false,onClick:click(i=>openM(['Alistamiento y calibración','Valor por estudiante'][i],`<p>${i?'Incluye captura, procesamiento, alojamiento, informe personal por correo, soporte técnico y actualización del tablero: USD 6.500 para 1.000 estudiantes.':'Pago único de USD 5.500 que no se repite en contratos de dos o más ciclos consecutivos.'}</p><div class="box">Inversión total del ciclo: <b>USD 12.000</b></div>`)),plugins:{legend:{position:'bottom'},tooltip:{...pt,callbacks:{label:c=>` ${c.label}: USD ${c.raw.toLocaleString('es-CO')}`}}}}});
+
+/* CALCULADORA */
+const roi=new Chart($('#cRoi'),{data:{labels:['1','2','5','10','20'],datasets:[{type:'bar',label:'Ingreso preservado',data:[],backgroundColor:P[3],borderRadius:8},{type:'line',label:'Inversión del ciclo',data:[],borderColor:'#CA102E',borderWidth:3,pointBackgroundColor:'#CA102E',tension:0}]},options:{maintainAspectRatio:false,plugins:{tooltip:{...pt,callbacks:{label:c=>` ${c.dataset.label}: ${money(c.raw)}`}},legend:{position:'bottom'}},scales:{x:{title:{display:true,text:'Estudiantes que permanecen'},grid:{display:false}},y:{beginAtZero:true,grid:{color:'#eef1f8'}}}}});
+function calc(){const N=+$('#iN').value,M=+$('#iM').value,S=+$('#iS').value;const k=N<=500?0:N<=2000?1:2,p=PK[k];const inv=p[2]+N*p[3],per=M*S,eq=Math.max(1,Math.ceil(inv/per));
+$('#vN').textContent=N.toLocaleString('es-CO');$('#vM').textContent=money(M);$('#vS').textContent=S;$('#rK').textContent=p[0];$('#rI').textContent=money(inv);$('#rE').textContent=eq+(eq>1?' estudiantes':' estudiante');
+$('#rT').innerHTML=`Cada estudiante que permanece preserva <b>${money(per)}</b>. Con retener a ${eq} de ${N.toLocaleString('es-CO')} (${(eq/N*100).toFixed(2).replace('.',',')} %) la inversión se recupera.`;
+roi.data.datasets[0].data=[1,2,5,10,20].map(x=>x*per);roi.data.datasets[1].data=[1,2,5,10,20].map(()=>inv);roi.update()}
+['iN','iM','iS'].forEach(i=>$('#'+i).oninput=calc);calc();
+
+/* MOTION */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+$$('.rv').forEach(e=>io.observe(e));
+const co=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const el=e.target,t=+el.dataset.c;let v=0;const s=setInterval(()=>{v+=Math.ceil(t/30);if(v>=t){v=t;clearInterval(s)}el.textContent=v},40);co.unobserve(el)}}),{threshold:.5});
+$$('span[data-c]').forEach(e=>co.observe(e));
+addEventListener('scroll',()=>{$('#bar').style.width=scrollY/(document.body.scrollHeight-innerHeight)*100+'%'});
+lucide.createIcons();setWA();
+</script>
+</body>
+</html>
